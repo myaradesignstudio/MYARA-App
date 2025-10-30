@@ -1,7 +1,7 @@
 {
   "name": "MYARA Studio Companion",
   "short_name": "MYARA",
-  "start_url": "./index.html",
+  "start_url": "/index.html"
   "display": "standalone",
   "background_color": "#FFF",
   "theme_color": "#FFD4E1",
