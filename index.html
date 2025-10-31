@@ -1,425 +1,143 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MYARA Studio Companion</title>
-  <meta name="theme-color" content="#FFD4E1" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icon-512.png">
+  <meta name="theme-color" content="#FFD4E1">
+  <link rel="manifest" href="manifest.json">
   <style>
+    /* --- Colors --- */
     :root{
-      --pink:#FFB6C8;
-      --pink-deep:#FF87A6;
-      --muted:#F8F5F7;
+      --hotpink:#cb2b65;
+      --blue:#4c62a2;
+      --lightpink:#edcfe1;
+      --yellow:#e4e84c;
+      --bg:#fff;
       --dark:#111216;
-      --accent:#8B5CF6;
-      --card:#ffffff;
-      --glass: rgba(255,255,255,0.6);
-      font-family: Inter, system-ui, -apple-system, "Helvetica Neue", Arial;
+      --card:#edcfe1;
+      --accent:#cb2b65;
     }
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--muted),#fff);color:var(--dark);}
-    .app{
-      max-width:1000px;margin:18px auto;padding:18px;
+
+    /* --- Fonts --- */
+    body, input, button, select, textarea {
+      font-family: 'Inter', sans-serif;
+      margin:0; padding:0;
+      background:var(--bg); color:var(--dark);
     }
-    header{
-      display:flex;align-items:center;gap:12px;
+
+    /* --- Layout --- */
+    body { display:flex; height:100vh; overflow:hidden; }
+    nav { width:220px; background:var(--lightpink); padding:12px; display:flex; flex-direction:column; gap:12px; }
+    nav button { background:none; border:none; padding:12px; text-align:left; font-weight:600; cursor:pointer; border-radius:8px; }
+    nav button.active { background:var(--hotpink); color:white; }
+    main { flex:1; padding:12px; overflow-y:auto; }
+
+    /* --- Project Cards --- */
+    .project-card { background:var(--card); padding:12px; border-radius:12px; margin-bottom:10px; box-shadow:0 4px 12px rgba(0,0,0,0.05); cursor:pointer; }
+    .project-card h3 { margin:0; font-size:16px; }
+    .pill { display:inline-block; padding:2px 6px; border-radius:999px; font-size:12px; margin-right:4px; background:var(--yellow); }
+    .progress-bar { width:100%; height:10px; background:#f0f0f0; border-radius:999px; overflow:hidden; margin-top:6px; }
+    .progress-fill { height:100%; background:linear-gradient(90deg,var(--hotpink),var(--blue)); width:0%; transition:width 0.3s; }
+
+    /* --- Buttons --- */
+    .btn { padding:8px 12px; border:none; border-radius:8px; background:var(--hotpink); color:white; cursor:pointer; font-weight:600; }
+    .btn.secondary { background:var(--blue); }
+
+    /* --- Responsive --- */
+    @media(max-width:600px){
+      body { flex-direction:column; }
+      nav { width:100%; flex-direction:row; overflow-x:auto; }
+      nav button { flex:1; white-space:nowrap; }
     }
-    .logo{
-      width:66px;height:66px;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--pink-deep));
-      display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(139,92,246,0.12);
-      font-weight:800;color:white;font-size:20px;
-    }
-    h1{font-size:20px;margin:0}
-    p.lead{margin:4px 0 12px 0;color:#666;font-size:13px}
-    .grid{display:grid;grid-template-columns:1fr 380px;gap:18px;margin-top:18px}
-    @media (max-width:880px){ .grid{grid-template-columns:1fr; } .app{padding:12px;} .logo{width:56px;height:56px}}
-    /* Left column (projects list) */
-    .panel{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 6px 20px rgba(17,18,22,0.04)}
-    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-    .btn{background:var(--pink);color:white;padding:8px 12px;border-radius:10px;border:none;font-weight:600;cursor:pointer}
-    .btn.ghost{background:transparent;border:1px solid rgba(0,0,0,0.06);color:var(--dark)}
-    .search{flex:1;min-width:120px;padding:8px;border-radius:10px;border:1px solid #eee}
-    .project-list{display:flex;flex-direction:column;gap:10px;max-height:56vh;overflow:auto;padding-right:6px}
-    .card-proj{display:flex;flex-direction:column;padding:12px;border-radius:10px;border:1px solid #f1f1f3;background:linear-gradient(180deg,#fff,#fff);cursor:pointer}
-    .card-proj h3{margin:0;font-size:15px}
-    .meta{display:flex;gap:8px;align-items:center;margin-top:8px;color:#666;font-size:12px}
-    .pill{padding:4px 8px;border-radius:999px;background:linear-gradient(90deg,#fff,#fff);border:1px solid #f0f0f2;font-weight:600}
-    /* Right column (detail) */
-    .detail h2{margin:0 0 6px 0;font-size:16px}
-    .row{display:flex;gap:8px;align-items:center;margin-top:8px}
-    label.small{font-size:12px;color:#666}
-    input, textarea, select{width:100%;padding:8px;border-radius:8px;border:1px solid #eee;font-size:14px}
-    textarea{min-height:110px;resize:vertical}
-    .task-row{display:flex;gap:8px;align-items:center;margin:6px 0}
-    .progress-wrap{margin-top:10px}
-    .progress-bar{width:100%;height:12px;border-radius:999px;background:#f0f0f2;overflow:hidden}
-    .progress-fill{height:100%;background:linear-gradient(90deg,var(--pink),var(--pink-deep));width:0%}
-    footer{margin-top:14px;color:#777;font-size:12px;text-align:center}
-    .tiny{font-size:11px;color:#999}
-    .btn-danger{background:#FF6B6B}
-    .small{padding:6px 8px;font-size:13px}
-    .inline{display:inline-flex;gap:8px;align-items:center}
-    .logo-sm{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--pink),var(--pink-deep));display:flex;align-items:center;justify-content:center;color:white;font-weight:700}
   </style>
 </head>
 <body>
-  <div class="app" id="app">
-    <header>
-      <div class="logo">MY</div>
-      <div>
-        <h1>MYARA — Studio Companion</h1>
-        <p class="lead">A small, personal tracker for projects, experiments and progress. Built for learning in public.</p>
-      </div>
-    </header>
 
-    <div class="grid">
-      <div>
-        <div class="panel">
-          <div class="controls">
-            <input id="search" class="search" placeholder="Search projects or inspiration…" />
-            <button class="btn" id="btnNew">+ New Project</button>
-            <button class="btn ghost" id="btnExport">Export</button>
-            <button class="btn ghost" id="btnReset">Reset</button>
-          </div>
+  <!-- Sidebar / Nav -->
+  <nav>
+    <button class="nav-btn active" data-section="projects">Projects</button>
+    <button class="nav-btn" data-section="inspirations">Inspirations</button>
+    <button class="nav-btn" data-section="tasks">Tasks</button>
+    <button class="nav-btn" data-section="settings">Settings</button>
+  </nav>
 
-          <div class="project-list" id="projectList" aria-live="polite"></div>
-        </div>
-      </div>
+  <!-- Main Content -->
+  <main id="main-panel">
+    <h1>Projects</h1>
+    <div id="project-list"></div>
+    <button class="btn" id="btnNewProject">+ New Project</button>
+  </main>
 
-      <div>
-        <div class="panel detail" id="detailPanel" aria-live="polite">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div class="inline">
-              <div class="logo-sm">MY</div>
-              <div style="margin-left:8px">
-                <div class="tiny">Active Project</div>
-                <h2 id="projTitle">Select or create a project</h2>
-              </div>
-            </div>
-            <div>
-              <button class="btn small" id="btnSave">Save</button>
-            </div>
-          </div>
+  <script>
+    // --- Data storage ---
+    const LSKEY = 'myara_projects_v2';
+    let projects = JSON.parse(localStorage.getItem(LSKEY)||'[]');
 
-          <div style="margin-top:12px">
-            <label class="small">Nature Inspiration</label>
-            <input id="inpInspiration" placeholder="e.g. mycelium networks, coral branching" />
-            <div class="row">
-              <div style="flex:1">
-                <label class="small">Status</label>
-                <select id="selStatus">
-                  <option value="not-started">Not started</option>
-                  <option value="in-progress">In progress</option>
-                  <option value="complete">Complete</option>
-                </select>
-              </div>
-              <div style="width:120px">
-                <label class="small">Progress</label>
-                <input id="inpProgress" type="range" min="0" max="100" value="0" />
-                <div class="tiny" id="progressValue">0%</div>
-              </div>
-            </div>
+    // --- DOM Elements ---
+    const mainPanel = document.getElementById('main-panel');
+    const projectList = document.getElementById('project-list');
+    const navButtons = document.querySelectorAll('.nav-btn');
+    const btnNewProject = document.getElementById('btnNewProject');
 
-            <label class="small" style="margin-top:10px">Short description</label>
-            <textarea id="inpDesc" placeholder="One-sentence concept summary"></textarea>
+    // --- Navigation ---
+    navButtons.forEach(btn=>{
+      btn.onclick = ()=>{
+        navButtons.forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        const section = btn.dataset.section;
+        renderSection(section);
+      };
+    });
 
-            <label class="small" style="margin-top:10px">Tasks / To-dos</label>
-            <div id="tasksWrap"></div>
-            <div style="display:flex;gap:8px;margin-top:8px">
-              <input id="newTaskText" placeholder="Add task (press +)" />
-              <button class="btn small" id="btnAddTask">+</button>
-            </div>
+    // --- Render Sections ---
+    function renderSection(section){
+      mainPanel.innerHTML = '';
+      if(section==='projects'){
+        mainPanel.innerHTML = '<h1>Projects</h1><div id="project-list"></div><button class="btn" id="btnNewProject">+ New Project</button>';
+        projectList = document.getElementById('project-list');
+        renderProjects();
+        document.getElementById('btnNewProject').onclick = addProject;
+      } else {
+        mainPanel.innerHTML = '<h1>'+section.charAt(0).toUpperCase()+section.slice(1)+'</h1><p>Coming soon...</p>';
+      }
+    }
 
-            <div class="progress-wrap">
-              <div class="tiny">Project progress</div>
-              <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-            </div>
+    // --- Render Project List ---
+    function renderProjects(){
+      projectList.innerHTML = '';
+      if(projects.length===0) projectList.innerHTML='<p>No projects yet</p>';
+      projects.forEach((p,index)=>{
+        const div = document.createElement('div');
+        div.className='project-card';
+        div.innerHTML = `<h3 contenteditable="true">${p.title}</h3>
+          <div class="pill">${p.status||'Not started'}</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${p.progress||0}%"></div></div>`;
+        div.querySelector('h3').onblur = (e)=>{ p.title=e.target.textContent; saveState(); };
+        projectList.appendChild(div);
+      });
+    }
 
-            <div style="display:flex;gap:8px;margin-top:10px">
-              <button class="btn ghost" id="btnDelete">Delete Project</button>
-              <button class="btn ghost" id="btnDuplicate">Duplicate</button>
-            </div>
-          </div>
-        </div>
+    // --- Add New Project ---
+    function addProject(){
+      const newP = { title:'Untitled Project', status:'Not started', progress:0 };
+      projects.unshift(newP);
+      saveState();
+      renderProjects();
+    }
 
-        <div style="height:12px"></div>
+    // --- Save to localStorage ---
+    function saveState(){
+      localStorage.setItem(LSKEY, JSON.stringify(projects));
+    }
 
-        <div class="panel">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <div><strong>Shortcuts</strong><div class="tiny">Quick actions</div></div>
-            <div class="tiny">Tap to act</div>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn ghost" id="btnToday">Today</button>
-            <button class="btn ghost" id="btnWIP">Show WIP</button>
-            <button class="btn ghost" id="btnDone">Show Done</button>
-          </div>
-          <div style="height:12px"></div>
-          <div class="tiny">Tip: Add this to your iPhone home screen: Share → Add to Home Screen</div>
-        </div>
-      </div>
-    </div>
+    // --- Initial render ---
+    renderSection('projects');
 
-    <footer>MYARA • Personal Studio Tracker — data stored locally on your device.</footer>
-  </div>
-
-<script>
-/* --- Simple LocalStorage-backed Project Tracker --- */
-const LSKEY = 'myara_projects_v1';
-
-let projects = JSON.parse(localStorage.getItem(LSKEY) || '[]');
-let currentId = null;
-
-const els = {
-  projectList: document.getElementById('projectList'),
-  btnNew: document.getElementById('btnNew'),
-  btnSave: document.getElementById('btnSave'),
-  btnDelete: document.getElementById('btnDelete'),
-  btnDuplicate: document.getElementById('btnDuplicate'),
-  btnExport: document.getElementById('btnExport'),
-  btnReset: document.getElementById('btnReset'),
-  search: document.getElementById('search'),
-  projTitle: document.getElementById('projTitle'),
-  inpInspiration: document.getElementById('inpInspiration'),
-  selStatus: document.getElementById('selStatus'),
-  inpDesc: document.getElementById('inpDesc'),
-  inpProgress: document.getElementById('inpProgress'),
-  progressValue: document.getElementById('progressValue'),
-  progressFill: document.getElementById('progressFill'),
-  tasksWrap: document.getElementById('tasksWrap'),
-  newTaskText: document.getElementById('newTaskText'),
-  btnAddTask: document.getElementById('btnAddTask'),
-  btnToday: document.getElementById('btnToday'),
-  btnWIP: document.getElementById('btnWIP'),
-  btnDone: document.getElementById('btnDone'),
-};
-
-function saveState(){
-  localStorage.setItem(LSKEY, JSON.stringify(projects));
-  renderList();
-}
-
-function uid(){ return 'p_'+Math.random().toString(36).slice(2,9); }
-
-function newProject(){
-  const id = uid();
-  const p = {
-    id, title: 'Untitled Project', inspiration:'', desc:'', status:'not-started', progress:0, tasks:[]
-  };
-  projects.unshift(p);
-  currentId = id;
-  saveState();
-  renderDetail();
-}
-
-function renderList(filter=''){
-  els.projectList.innerHTML = '';
-  const items = projects.filter(p=>{
-    if(!filter) return true;
-    const s = (p.title + ' ' + p.inspiration + ' ' + p.desc).toLowerCase();
-    return s.includes(filter.toLowerCase());
-  });
-  items.forEach(p=>{
-    const el = document.createElement('div');
-    el.className = 'card-proj';
-    el.dataset.id = p.id;
-    el.innerHTML = `<h3>${escapeHtml(p.title)}</h3>
-      <div class="meta">
-        <div class="pill">${p.inspiration || '—'}</div>
-        <div class="pill">${statusLabel(p.status)}</div>
-        <div class="tiny" style="margin-left:auto">${p.progress}%</div>
-      </div>`;
-    el.onclick = ()=>{ currentId = p.id; renderDetail(); };
-    els.projectList.appendChild(el);
-  });
-}
-
-function statusLabel(s){
-  if(s==='not-started') return 'Not started';
-  if(s==='in-progress') return 'In progress';
-  if(s==='complete') return 'Complete';
-  return s;
-}
-
-function renderDetail(){
-  const p = projects.find(x=>x.id===currentId) || projects[0];
-  if(!p){
-    // empty state
-    els.projTitle.textContent = 'Select or create a project';
-    els.inpInspiration.value = '';
-    els.inpDesc.value = '';
-    els.selStatus.value = 'not-started';
-    els.inpProgress.value = 0;
-    els.progressValue.textContent = '0%';
-    renderTasks([]);
-    return;
-  }
-  els.projTitle.textContent = p.title || 'Untitled';
-  els.inpInspiration.value = p.inspiration || '';
-  els.selStatus.value = p.status || 'not-started';
-  els.inpDesc.value = p.desc || '';
-  els.inpProgress.value = p.progress || 0;
-  els.progressValue.textContent = (p.progress || 0) + '%';
-  els.progressFill.style.width = (p.progress || 0) + '%';
-  renderTasks(p.tasks || []);
-  // attach inline title editing
-  els.projTitle.contentEditable = true;
-  els.projTitle.onblur = ()=>{
-    p.title = els.projTitle.textContent.trim() || 'Untitled Project';
-    saveState();
-  };
-}
-
-function renderTasks(tasks){
-  els.tasksWrap.innerHTML = '';
-  tasks.forEach((t,i)=>{
-    const div = document.createElement('div');
-    div.className = 'task-row';
-    div.innerHTML = `<input type="checkbox" ${t.done ? 'checked' : ''} /> <div style="flex:1">${escapeHtml(t.text)}</div>
-      <button class="btn small">Delete</button>`;
-    const checkbox = div.querySelector('input[type=checkbox]');
-    checkbox.onchange = (e)=>{
-      toggleTask(i);
-    };
-    const del = div.querySelector('button');
-    del.onclick = ()=>{ deleteTask(i); };
-    els.tasksWrap.appendChild(div);
-  });
-  if(tasks.length===0){
-    els.tasksWrap.innerHTML = '<div class="tiny">No tasks yet — add one to track small steps.</div>';
-  }
-}
-
-/* --- actions --- */
-els.btnNew.onclick = ()=>{ newProject(); renderList(); renderDetail(); };
-els.btnSave.onclick = ()=>{
-  const p = projects.find(x=>x.id===currentId);
-  if(!p) return alert('Select a project');
-  p.inspiration = els.inpInspiration.value;
-  p.desc = els.inpDesc.value;
-  p.status = els.selStatus.value;
-  p.progress = parseInt(els.inpProgress.value || 0);
-  // title already saved via blur
-  saveState();
-  renderDetail();
-};
-els.inpProgress.oninput = ()=>{
-  els.progressValue.textContent = els.inpProgress.value + '%';
-  els.progressFill.style.width = els.inpProgress.value + '%';
-};
-els.btnAddTask.onclick = ()=>{
-  const txt = els.newTaskText.value.trim();
-  if(!txt) return;
-  const p = projects.find(x=>x.id===currentId);
-  if(!p) return alert('Select a project');
-  p.tasks.push({text:txt,done:false});
-  els.newTaskText.value='';
-  saveState();
-  renderDetail();
-};
-function toggleTask(index){
-  const p = projects.find(x=>x.id===currentId);
-  if(!p) return;
-  p.tasks[index].done = !p.tasks[index].done;
-  // auto-update progress: percent of tasks completed if tasks exist
-  if(p.tasks.length>0){
-    const done = p.tasks.filter(t=>t.done).length;
-    p.progress = Math.round(done / p.tasks.length * 100);
-    els.inpProgress.value = p.progress; els.progressValue.textContent = p.progress + '%';
-  }
-  saveState(); renderDetail();
-}
-function deleteTask(index){
-  const p = projects.find(x=>x.id===currentId);
-  if(!p) return;
-  p.tasks.splice(index,1);
-  saveState(); renderDetail();
-}
-els.btnDelete.onclick = ()=>{
-  if(!currentId) return;
-  if(!confirm('Delete this project?')) return;
-  projects = projects.filter(p=>p.id!==currentId);
-  currentId = projects[0] ? projects[0].id : null;
-  saveState(); renderDetail();
-};
-els.btnDuplicate.onclick = ()=>{
-  const p = projects.find(x=>x.id===currentId);
-  if(!p) return;
-  const clone = JSON.parse(JSON.stringify(p));
-  clone.id = uid(); clone.title = clone.title + ' (copy)';
-  projects.unshift(clone);
-  saveState();
-  currentId = clone.id;
-  renderDetail();
-};
-els.btnExport.onclick = ()=>{
-  const data = JSON.stringify(projects,null,2);
-  const blob = new Blob([data],{type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'myara-projects.json';
-  a.click();
-  URL.revokeObjectURL(url);
-};
-els.btnReset.onclick = ()=>{
-  if(!confirm('Reset ALL data?')) return;
-  localStorage.removeItem(LSKEY);
-  projects = [];
-  currentId = null;
-  renderList(); renderDetail();
-};
-els.search.oninput = (e)=>{ renderList(e.target.value); };
-
-// shortcut filters
-els.btnWIP.onclick = ()=>{ renderListFilter(p => p.status==='in-progress'); };
-els.btnToday.onclick = ()=>{ renderListFilter(p => p.progress>0 && p.progress<100); };
-els.btnDone.onclick = ()=>{ renderListFilter(p => p.status==='complete' || p.progress===100); };
-
-function renderListFilter(fn){
-  els.projectList.innerHTML = '';
-  const items = projects.filter(fn);
-  if(items.length===0) els.projectList.innerHTML='<div class="tiny">No results</div>';
-  items.forEach(p=>{
-    const el = document.createElement('div');
-    el.className = 'card-proj';
-    el.dataset.id = p.id;
-    el.innerHTML = `<h3>${escapeHtml(p.title)}</h3>
-      <div class="meta">
-        <div class="pill">${p.inspiration || '—'}</div>
-        <div class="pill">${statusLabel(p.status)}</div>
-        <div class="tiny" style="margin-left:auto">${p.progress}%</div>
-      </div>`;
-    el.onclick = ()=>{ currentId = p.id; renderDetail(); };
-    els.projectList.appendChild(el);
-  });
-}
-
-/* helpers */
-function escapeHtml(s){ return (s||'').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
-
-/* load initial */
-if(projects.length===0){
-  // starter example project to guide you
-  projects = [{
-    id: uid(),
-    title: 'Coral Lamp — Thesis',
-    inspiration: 'Coral branching morphogenesis',
-    desc: 'Parametric lamp exploring branching growth and structural porosity.',
-    status: 'in-progress',
-    progress: 24,
-    tasks: [{text:'Grasshopper growth iteration',done:true},{text:'Material tests (resin)',done:false}]
-  }];
-}
-currentId = projects[0].id;
-renderList();
-renderDetail();
-
-/* Service worker register (optional) */
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').catch(e=>{/*sw fail*/});
-}
-
-</script>
+    // --- Service Worker ---
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('sw.js').catch(e=>console.log('SW failed',e));
+    }
+  </script>
 </body>
 </html>
