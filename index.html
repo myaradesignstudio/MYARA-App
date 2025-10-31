@@ -1,143 +1,168 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MYARA Studio Companion</title>
-  <meta name="theme-color" content="#FFD4E1">
-  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FFD4E1" />
+  <link rel="manifest" href="manifest.json" />
   <style>
-    /* --- Colors --- */
-    :root{
-      --hotpink:#cb2b65;
-      --blue:#4c62a2;
-      --lightpink:#edcfe1;
-      --yellow:#e4e84c;
-      --bg:#fff;
-      --dark:#111216;
-      --card:#edcfe1;
-      --accent:#cb2b65;
+    :root {
+      --yellow: #E4E84C;
+      --blue: #4C62A2;
+      --hotpink: #CB2B65;
+      --lightpink: #EDCFE1;
+      --dark: #111216;
+      --card: #fff;
+      font-family: -apple-system, system-ui, "Helvetica Neue", Arial, sans-serif;
     }
-
-    /* --- Fonts --- */
-    body, input, button, select, textarea {
-      font-family: 'Inter', sans-serif;
-      margin:0; padding:0;
-      background:var(--bg); color:var(--dark);
-    }
-
-    /* --- Layout --- */
-    body { display:flex; height:100vh; overflow:hidden; }
-    nav { width:220px; background:var(--lightpink); padding:12px; display:flex; flex-direction:column; gap:12px; }
-    nav button { background:none; border:none; padding:12px; text-align:left; font-weight:600; cursor:pointer; border-radius:8px; }
-    nav button.active { background:var(--hotpink); color:white; }
-    main { flex:1; padding:12px; overflow-y:auto; }
-
-    /* --- Project Cards --- */
-    .project-card { background:var(--card); padding:12px; border-radius:12px; margin-bottom:10px; box-shadow:0 4px 12px rgba(0,0,0,0.05); cursor:pointer; }
-    .project-card h3 { margin:0; font-size:16px; }
-    .pill { display:inline-block; padding:2px 6px; border-radius:999px; font-size:12px; margin-right:4px; background:var(--yellow); }
-    .progress-bar { width:100%; height:10px; background:#f0f0f0; border-radius:999px; overflow:hidden; margin-top:6px; }
-    .progress-fill { height:100%; background:linear-gradient(90deg,var(--hotpink),var(--blue)); width:0%; transition:width 0.3s; }
-
-    /* --- Buttons --- */
-    .btn { padding:8px 12px; border:none; border-radius:8px; background:var(--hotpink); color:white; cursor:pointer; font-weight:600; }
-    .btn.secondary { background:var(--blue); }
-
-    /* --- Responsive --- */
-    @media(max-width:600px){
-      body { flex-direction:column; }
-      nav { width:100%; flex-direction:row; overflow-x:auto; }
-      nav button { flex:1; white-space:nowrap; }
-    }
+    html, body { height: 100%; margin: 0; background: var(--lightpink); color: var(--dark); }
+    .app { max-width: 1000px; margin: 18px auto; padding: 18px; }
+    header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .logo { width: 66px; height: 66px; border-radius: 12px; background: var(--hotpink); display:flex; align-items:center; justify-content:center; font-weight:800; color:white; font-size:20px; }
+    h1 { margin: 0; font-size: 20px; }
+    .grid { display: grid; grid-template-columns: 1fr 380px; gap: 18px; }
+    @media (max-width: 880px) { .grid { grid-template-columns: 1fr; } .logo { width: 56px; height: 56px; } }
+    .panel { background: var(--card); border-radius: 12px; padding: 14px; box-shadow: 0 6px 20px rgba(17,18,22,0.04); }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .btn { background: var(--blue); color: white; padding: 8px 12px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; }
+    .btn.ghost { background: transparent; border: 1px solid rgba(0,0,0,0.06); color: var(--dark); }
+    .search { flex: 1; min-width: 120px; padding: 8px; border-radius: 10px; border: 1px solid #eee; }
+    .project-list { display: flex; flex-direction: column; gap: 10px; max-height: 56vh; overflow:auto; padding-right:6px; }
+    .card-proj { display:flex; flex-direction: column; padding:12px; border-radius:10px; border:1px solid #f1f1f3; cursor:pointer; }
+    .card-proj h3 { margin:0; font-size:15px; }
+    .meta { display:flex; gap:8px; align-items:center; margin-top:8px; font-size:12px; color:#666; }
+    .pill { padding:4px 8px; border-radius:999px; border:1px solid #f0f0f2; font-weight:600; background: var(--lightpink); }
+    .detail h2 { margin:0 0 6px 0; font-size:16px; }
+    .row { display:flex; gap:8px; align-items:center; margin-top:8px; }
+    input, textarea, select { width:100%; padding:8px; border-radius:8px; border:1px solid #eee; font-size:14px; }
+    textarea { min-height:110px; resize: vertical; }
+    footer { margin-top:14px; color:#777; font-size:12px; text-align:center; }
   </style>
 </head>
 <body>
+  <div class="app" id="app">
+    <header>
+      <div class="logo">MY</div>
+      <div>
+        <h1>MYARA — Studio Companion</h1>
+      </div>
+    </header>
+    <div class="grid">
+      <div>
+        <div class="panel">
+          <div class="controls">
+            <input id="search" class="search" placeholder="Search projects…" />
+            <button class="btn" id="btnNew">+ New Project</button>
+            <button class="btn ghost" id="btnReset">Reset</button>
+          </div>
+          <div class="project-list" id="projectList"></div>
+        </div>
+      </div>
+      <div>
+        <div class="panel detail" id="detailPanel">
+          <h2 id="projTitle">Select a project</h2>
+          <label>Description</label>
+          <textarea id="inpDesc" placeholder="Project description…"></textarea>
+          <label>Status</label>
+          <select id="selStatus">
+            <option value="not-started">Not started</option>
+            <option value="in-progress">In progress</option>
+            <option value="complete">Complete</option>
+          </select>
+          <label>Progress</label>
+          <input id="inpProgress" type="range" min="0" max="100" value="0" />
+          <div id="progressValue">0%</div>
+          <button class="btn" id="btnSave">Save</button>
+          <button class="btn ghost" id="btnDelete">Delete</button>
+        </div>
+      </div>
+    </div>
+    <footer>MYARA • Personal Studio Tracker</footer>
+  </div>
 
-  <!-- Sidebar / Nav -->
-  <nav>
-    <button class="nav-btn active" data-section="projects">Projects</button>
-    <button class="nav-btn" data-section="inspirations">Inspirations</button>
-    <button class="nav-btn" data-section="tasks">Tasks</button>
-    <button class="nav-btn" data-section="settings">Settings</button>
-  </nav>
+<script>
+const LSKEY = 'myara_projects_v2';
+let projects = JSON.parse(localStorage.getItem(LSKEY)||'[]');
+let currentId = null;
 
-  <!-- Main Content -->
-  <main id="main-panel">
-    <h1>Projects</h1>
-    <div id="project-list"></div>
-    <button class="btn" id="btnNewProject">+ New Project</button>
-  </main>
+const els = {
+  projectList: document.getElementById('projectList'),
+  btnNew: document.getElementById('btnNew'),
+  btnSave: document.getElementById('btnSave'),
+  btnDelete: document.getElementById('btnDelete'),
+  btnReset: document.getElementById('btnReset'),
+  search: document.getElementById('search'),
+  projTitle: document.getElementById('projTitle'),
+  inpDesc: document.getElementById('inpDesc'),
+  selStatus: document.getElementById('selStatus'),
+  inpProgress: document.getElementById('inpProgress'),
+  progressValue: document.getElementById('progressValue'),
+};
 
-  <script>
-    // --- Data storage ---
-    const LSKEY = 'myara_projects_v2';
-    let projects = JSON.parse(localStorage.getItem(LSKEY)||'[]');
+function saveState(){ localStorage.setItem(LSKEY, JSON.stringify(projects)); renderList(); }
 
-    // --- DOM Elements ---
-    const mainPanel = document.getElementById('main-panel');
-    const projectList = document.getElementById('project-list');
-    const navButtons = document.querySelectorAll('.nav-btn');
-    const btnNewProject = document.getElementById('btnNewProject');
+function uid(){ return 'p_'+Math.random().toString(36).slice(2,9); }
 
-    // --- Navigation ---
-    navButtons.forEach(btn=>{
-      btn.onclick = ()=>{
-        navButtons.forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
-        const section = btn.dataset.section;
-        renderSection(section);
-      };
-    });
+function newProject(){
+  const id = uid();
+  const p = {id, title:'Untitled', desc:'', status:'not-started', progress:0};
+  projects.unshift(p); currentId=id; saveState(); renderDetail();
+}
 
-    // --- Render Sections ---
-    function renderSection(section){
-      mainPanel.innerHTML = '';
-      if(section==='projects'){
-        mainPanel.innerHTML = '<h1>Projects</h1><div id="project-list"></div><button class="btn" id="btnNewProject">+ New Project</button>';
-        projectList = document.getElementById('project-list');
-        renderProjects();
-        document.getElementById('btnNewProject').onclick = addProject;
-      } else {
-        mainPanel.innerHTML = '<h1>'+section.charAt(0).toUpperCase()+section.slice(1)+'</h1><p>Coming soon...</p>';
-      }
-    }
+function renderList(filter=''){
+  els.projectList.innerHTML='';
+  const items = projects.filter(p=>{
+    if(!filter) return true;
+    return (p.title + ' ' + p.desc).toLowerCase().includes(filter.toLowerCase());
+  });
+  items.forEach(p=>{
+    const el = document.createElement('div');
+    el.className='card-proj';
+    el.dataset.id = p.id;
+    el.innerHTML = `<h3>${p.title}</h3>`;
+    el.onclick = ()=>{ currentId=p.id; renderDetail(); };
+    els.projectList.appendChild(el);
+  });
+}
 
-    // --- Render Project List ---
-    function renderProjects(){
-      projectList.innerHTML = '';
-      if(projects.length===0) projectList.innerHTML='<p>No projects yet</p>';
-      projects.forEach((p,index)=>{
-        const div = document.createElement('div');
-        div.className='project-card';
-        div.innerHTML = `<h3 contenteditable="true">${p.title}</h3>
-          <div class="pill">${p.status||'Not started'}</div>
-          <div class="progress-bar"><div class="progress-fill" style="width:${p.progress||0}%"></div></div>`;
-        div.querySelector('h3').onblur = (e)=>{ p.title=e.target.textContent; saveState(); };
-        projectList.appendChild(div);
-      });
-    }
+function renderDetail(){
+  const p = projects.find(x=>x.id===currentId);
+  if(!p){ els.projTitle.textContent='Select a project'; els.inpDesc.value=''; els.selStatus.value='not-started'; els.inpProgress.value=0; els.progressValue.textContent='0%'; return; }
+  els.projTitle.textContent=p.title;
+  els.inpDesc.value=p.desc;
+  els.selStatus.value=p.status;
+  els.inpProgress.value=p.progress;
+  els.progressValue.textContent=p.progress+'%';
+}
 
-    // --- Add New Project ---
-    function addProject(){
-      const newP = { title:'Untitled Project', status:'Not started', progress:0 };
-      projects.unshift(newP);
-      saveState();
-      renderProjects();
-    }
+els.btnNew.onclick = ()=>{ newProject(); renderList(); renderDetail(); };
+els.btnSave.onclick = ()=>{
+  const p = projects.find(x=>x.id===currentId);
+  if(!p) return;
+  p.desc=els.inpDesc.value;
+  p.status=els.selStatus.value;
+  p.progress=parseInt(els.inpProgress.value);
+  saveState(); renderDetail();
+};
+els.btnDelete.onclick = ()=>{
+  projects = projects.filter(p=>p.id!==currentId);
+  currentId = projects[0]?projects[0].id:null;
+  saveState(); renderDetail();
+};
+els.btnReset.onclick = ()=>{
+  if(!confirm('Delete all projects?')) return;
+  localStorage.removeItem(LSKEY); projects=[]; currentId=null; renderList(); renderDetail();
+};
+els.search.oninput = (e)=>{ renderList(e.target.value); };
 
-    // --- Save to localStorage ---
-    function saveState(){
-      localStorage.setItem(LSKEY, JSON.stringify(projects));
-    }
+// Load initial
+if(projects.length===0){ newProject(); }
+currentId = projects[0].id;
+renderList(); renderDetail();
 
-    // --- Initial render ---
-    renderSection('projects');
-
-    // --- Service Worker ---
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.register('sw.js').catch(e=>console.log('SW failed',e));
-    }
-  </script>
+// Optional Service Worker
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(e=>{}); }
+</script>
 </body>
 </html>
